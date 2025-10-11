@@ -20,7 +20,7 @@ const ashaSchema = new mongoose.Schema(
     },
 
     photo_url: {
-      type: String,
+      type: String,    // No change needed. Just ensure your backend handles file upload and returns/stores the URL.
     },
 
     address: {
@@ -38,11 +38,13 @@ const ashaSchema = new mongoose.Schema(
       },
     ],
 
-    certifications: [
-      {
-        type: String,
-      },
-    ],
+    certifications: [{
+      title: String,
+      certificate_url: String,  // optional, for file uploads
+      issued_by: String,
+      date_issued: Date
+    }],
+
 
     associated_phc: {
       type: String,
@@ -55,14 +57,9 @@ const ashaSchema = new mongoose.Schema(
       bank_name: { type: String },
     },
 
-    verification_status: {
-      type: String,
-      enum: ["Pending", "Verified", "Rejected"],
-      default: "Pending",
-    },
   },
   {
-    timestamps: true, 
+    timestamps: true,
   }
 );
 

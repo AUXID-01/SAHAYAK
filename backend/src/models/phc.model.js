@@ -20,7 +20,7 @@ const phcStaffSchema = new mongoose.Schema(
     },
 
     photo_url: {
-      type: String,
+      type: String,       //No change needed. Just ensure your backend handles file upload and returns/stores the URL.
     },
 
     address: {
@@ -38,11 +38,12 @@ const phcStaffSchema = new mongoose.Schema(
       },
     ],
 
-    certifications: [
-      {
-        type: String,
-      },
-    ],
+    certifications: [{
+      title: String,
+      certificate_url: String,  // optional, for file uploads
+      issued_by: String,
+      date_issued: Date
+    }],
 
     bank_details: {
       bank_account_number: String,
