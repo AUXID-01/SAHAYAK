@@ -10,6 +10,9 @@ import adminRoutes from "./src/routes/admin.routes.js";
 
 dotenv.config();
 const app = express();
+app.get("/", (req, res) => {
+  res.send("Hello World!");
+})
 
 // Middlewares
 app.use(express.json());
