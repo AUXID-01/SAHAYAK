@@ -1,13 +1,38 @@
-import authRoutes from "./routes/auth.routes.js";
-import phcRoutes from "./routes/phc.routes.js";
-import ashaRoutes from "./routes/asha.routes.js";
-import adminRoutes from "./routes/admin.routes.js";
+import express from "express";
+import dotenv from "dotenv";
+import mongoose from "mongoose";
+import morgan from "morgan";
 
+import authRoutes from "./src/routes/auth.routes.js";
+import phcRoutes from "./src/routes/phc.routes.js";
+import ashaRoutes from "./src/routes/asha.routes.js";
+import adminRoutes from "./src/routes/admin.routes.js";
+
+dotenv.config();
+const app = express();
+
+// Middlewares
+app.use(express.json());
+app.use(morgan("dev"));
+
+// Database connection (example, adjust MONGODB_URI as needed)
+mongoose.connect(process.env.MONGO_URL, {
+//   useNewUrlParser: true,
+//   useUnifiedTopology: true,
+}).then(() => {
+  console.log("MongoDB connected");
+}).catch((err) => {
+  console.error("MongoDB connection error:", err);
+});
+
+// Routes
 app.use("/auth", authRoutes);
 app.use("/phc", phcRoutes);
 app.use("/asha", ashaRoutes);
 app.use("/admin", adminRoutes);
 
+const port = process.env.PORT || 5000;
+
 app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
+  console.log(`Server is running on port ${port}`);
 });
