@@ -1,68 +1,42 @@
 import asyncHandler from "../utils/asyncHandler.js";
 import User from "../models/user.model.js";
 import Admin from "../models/admin.model.js";
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
 
-export const registerAdmin = asyncHandler(async (req, res) => {
-  const {
-    first_name,
-    last_name,
-    email,
-    password,
-    phone_number,
-    roles,
-    permissions,
-    regions_managed,
-  } = req.body;
+// Step 2: Admin role-specific registration
+export const registerAdminDetails = asyncHandler(async (req, res) => {
+  const { user_id, roles, permissions, regions_managed } = req.body;
+
+  if (!user_id || !roles || roles.length === 0) {
+    return res.status(400).json({ message: "Required fields missing" });
+  }
+
+  const user = await User.findOne({ user_id });
+  if (!user) return res.status(404).json({ message: "Base user not found" });
+
+  const existingAdmin = await Admin.findOne({ user_id });
+  if (existingAdmin) return res.status(400).json({ message: "Admin details already submitted" });
 
   const validRoles = ["superadmin", "regionaladmin", "dataadmin"];
   const invalidRole = roles.some((r) => !validRoles.includes(r));
-  if (invalidRole)
-    return res.status(400).json({ message: "Invalid admin role provided" });
+  if (invalidRole) return res.status(400).json({ message: "Invalid admin role provided" });
 
-  if (!first_name || !last_name || !email || !password)
-    return res.status(400).json({ message: "Required fields missing" });
-
-  const existingUser = await User.findOne({ email });
-  if (existingUser)
-    return res.status(400).json({ message: "Email already exists" });
-
-  const salt = await bcrypt.genSalt(10);
-  const hashedPassword = await bcrypt.hash(password, salt);
-
-  // Create base user
-  const user = await User.create({
-    user_id: crypto.randomUUID(),
-    first_name,
-    last_name,
-    email,
-    password_hash: hashedPassword,
-    phone_number,
-    user_type: "admin",
-    is_active: true,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  });
-
-  // Create admin role record
   const admin = await Admin.create({
-    user_id: user.user_id,
+    user_id,
     roles,
-    permissions,
-    regions_managed,
+    permissions: permissions || [],
+    regions_managed: regions_managed || [],
     createdAt: new Date(),
-    updatedAt: new Date(),
+    updatedAt: new Date()
   });
 
-  const payload = { id: user.user_id, role: user.user_type };
-  const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "1h" });
-
-  res
-    .status(201)
-    .json({ message: "Admin registered successfully", token, user, admin });
+  res.status(201).json({
+    message: "Admin details registered successfully",
+    admin
+  });
 });
 
+
+// Get Admin profile (protected)
 export const getAdminProfile = asyncHandler(async (req, res) => {
   const admin = await Admin.findOne({ user_id: req.user.id }).populate(
     "user_id",
